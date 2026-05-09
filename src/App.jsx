@@ -398,7 +398,11 @@ function App() {
     <main className="app-shell">
       <header className="club-header">
         <p className="top-label">Davidson Standard Time</p>
-        <h1>The Official 4 O’Clockies Club</h1>
+        <h1 className="club-title">
+          <span>The Official</span>
+          <span>4 O’Clockies</span>
+          <span>Club</span>
+        </h1>
         <p className="subtitle">
           Established under the lifelong authority of Shirley Davidson
         </p>
