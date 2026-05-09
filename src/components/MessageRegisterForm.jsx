@@ -11,7 +11,7 @@ const STATUS_OPTIONS = [
   'Snack debt acknowledged',
 ]
 
-function MessageRegisterForm() {
+function MessageRegisterForm({ onMessagePosted }) {
   const [name, setName] = useState('')
   const [status, setStatus] = useState('')
   const [message, setMessage] = useState('')
@@ -60,6 +60,10 @@ function MessageRegisterForm() {
     setFormStatus('success')
     setFormMessage('Your message has been posted to the official register.')
     setMessage('')
+
+    if (typeof onMessagePosted === 'function') {
+      onMessagePosted()
+    }
   }
 
   const isSubmitting = formStatus === 'submitting'
@@ -70,8 +74,8 @@ function MessageRegisterForm() {
         <p className="eyebrow">Official Club Register</p>
         <h3>Leave a 4 O’Clockies Message</h3>
         <p>
-          Add a note to the family register. The latest preview and full history
-          remain placeholder entries until the next stages.
+          Add a note to the family register. The latest preview will refresh after
+          posting, while the full history stays as placeholder entries until v1.4.
         </p>
       </div>
 
@@ -134,8 +138,8 @@ function MessageRegisterForm() {
       )}
 
       <p className="form-note">
-        Latest preview and full history are still placeholder entries until v1.3
-        and v1.4.
+        Latest preview now refreshes from the official register. Full history remains
+        placeholder entries until v1.4.
       </p>
     </form>
   )

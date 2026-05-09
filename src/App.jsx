@@ -1,5 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import MessageRegisterForm from "./components/MessageRegisterForm";
+import {
+  fetchFullMessageHistory,
+  fetchLatestMessages
+} from "./lib/messageBoardApi";
 import "./App.css";
 
 const NZ_TIME_ZONE = "Pacific/Auckland";
@@ -35,72 +39,6 @@ const toasts = [
   "To Mum, Ma, Nana and GG, who reminds us that being together is not a small thing.",
   "To all disputed matters, may they be settled wisely, peacefully, and in Mum’s favour.",
   "To The Official 4 O’Clockies Club, established with love, maintained by tradition, and forever under the lifelong authority of Shirley Davidson."
-];
-
-const sampleMessages = [
-  {
-    id: 1,
-    name: "Jamie",
-    status: "Present and accounted for",
-    message:
-      "Officially opening proceedings. Glasses inspected, snacks encouraged, authority acknowledged.",
-    postedLabel: "Sunday 10 May 2026, 4:01 pm",
-    dateGroup: "Sunday 10 May 2026"
-  },
-  {
-    id: 2,
-    name: "Taylor",
-    status: "Raising a glass from afar",
-    message:
-      "Happy 4 o’clockies Mum. Love you. Hope the conversation is already out of control.",
-    postedLabel: "Sunday 10 May 2026, 4:06 pm",
-    dateGroup: "Sunday 10 May 2026"
-  },
-  {
-    id: 3,
-    name: "Sam",
-    status: "Late but emotionally accounted for",
-    message:
-      "Running behind, but fully supportive of all refreshments and any snack-related decisions.",
-    postedLabel: "Sunday 10 May 2026, 4:18 pm",
-    dateGroup: "Sunday 10 May 2026"
-  },
-  {
-    id: 4,
-    name: "Morgan",
-    status: "Snack debt acknowledged",
-    message:
-      "Arriving without snacks today, but with sincere regret and a promise to improve.",
-    postedLabel: "Sunday 10 May 2026, 4:27 pm",
-    dateGroup: "Sunday 10 May 2026"
-  },
-  {
-    id: 5,
-    name: "Alex",
-    status: "Absent in body, present in spirit",
-    message:
-      "Thinking of everyone at the sacred hour. Please ensure Mum has the best seat.",
-    postedLabel: "Sunday 10 May 2026, 4:42 pm",
-    dateGroup: "Sunday 10 May 2026"
-  },
-  {
-    id: 6,
-    name: "Jordan",
-    status: "Represented by grandchild",
-    message:
-      "Official representation has been delegated to the smallest available club member.",
-    postedLabel: "Saturday 9 May 2026, 4:12 pm",
-    dateGroup: "Saturday 9 May 2026"
-  },
-  {
-    id: 7,
-    name: "Casey",
-    status: "",
-    message:
-      "A small notice of love, appreciation, and full respect for the final authority.",
-    postedLabel: "Saturday 9 May 2026, 4:35 pm",
-    dateGroup: "Saturday 9 May 2026"
-  }
 ];
 
 const featureCards = [
@@ -274,33 +212,138 @@ function getRandomToastIndex(currentIndex) {
   return nextIndex;
 }
 
-function groupMessagesByDate(messages) {
-  return messages.reduce((groups, message) => {
-    const existingGroup = groups.find((group) => group.dateGroup === message.dateGroup);
+function formatMessageDateGroup(localDate) {
+  if (!localDate) {
+    return "Undated Official Notices";
+  }
+
+  const [year, month, day] = localDate.split("-").map(Number);
+
+  if (!year || !month || !day) {
+    return localDate;
+  }
+
+  return new Intl.DateTimeFormat("en-NZ", {
+    timeZone: NZ_TIME_ZONE,
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  }).format(new Date(Date.UTC(year, month - 1, day)));
+}
+
+function groupMessagesByLocalDate(messages) {
+  const groups = messages.reduce((groupList, message) => {
+    const sortKey = message.local_date || "undated";
+    const existingGroup = groupList.find((group) => group.sortKey === sortKey);
+    const preparedMessage = {
+      ...message,
+      status: message.status || "",
+      postedLabel: formatPostedLabel(message.created_at)
+    };
 
     if (existingGroup) {
-      existingGroup.messages.push(message);
-      return groups;
+      existingGroup.messages.push(preparedMessage);
+      return groupList;
     }
 
     return [
-      ...groups,
+      ...groupList,
       {
-        dateGroup: message.dateGroup,
-        messages: [message]
+        sortKey,
+        dateGroup: formatMessageDateGroup(message.local_date),
+        messages: [preparedMessage]
       }
     ];
   }, []);
+
+  return groups.sort((firstGroup, secondGroup) =>
+    secondGroup.sortKey.localeCompare(firstGroup.sortKey)
+  );
+}
+
+function formatPostedLabel(createdAt) {
+  if (!createdAt) {
+    return "Official posting time pending";
+  }
+
+  const postedDate = new Date(createdAt);
+
+  if (Number.isNaN(postedDate.getTime())) {
+    return "Official posting time pending";
+  }
+
+  return new Intl.DateTimeFormat("en-NZ", {
+    timeZone: NZ_TIME_ZONE,
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true
+  }).format(postedDate);
 }
 
 function App() {
   const [now, setNow] = useState(new Date());
   const [activeModal, setActiveModal] = useState(null);
   const [toastIndex, setToastIndex] = useState(0);
+  const [latestMessages, setLatestMessages] = useState([]);
+  const [latestMessagesStatus, setLatestMessagesStatus] = useState("idle");
+  const [fullHistoryMessages, setFullHistoryMessages] = useState([]);
+  const [fullHistoryStatus, setFullHistoryStatus] = useState("idle");
 
   const sacredHourStatus = useMemo(() => getSacredHourStatus(now), [now]);
-  const latestMessages = sampleMessages.slice(0, 5);
-  const groupedMessages = groupMessagesByDate(sampleMessages);
+  const latestPreviewMessages = useMemo(
+    () =>
+      latestMessages.map((message) => ({
+        ...message,
+        status: message.status || "",
+        postedLabel: formatPostedLabel(message.created_at)
+      })),
+    [latestMessages]
+  );
+  const groupedFullHistoryMessages = useMemo(
+    () => groupMessagesByLocalDate(fullHistoryMessages),
+    [fullHistoryMessages]
+  );
+
+  async function loadLatestMessages() {
+    setLatestMessagesStatus("loading");
+
+    try {
+      const messages = await fetchLatestMessages(5);
+      setLatestMessages(messages);
+      setLatestMessagesStatus("success");
+    } catch (error) {
+      console.error("Latest messages could not be loaded:", error);
+      setLatestMessages([]);
+      setLatestMessagesStatus("error");
+    }
+  }
+
+  async function loadFullMessageHistory() {
+    setFullHistoryStatus("loading");
+
+    try {
+      const messages = await fetchFullMessageHistory();
+      setFullHistoryMessages(messages);
+      setFullHistoryStatus("success");
+    } catch (error) {
+      console.error("Full message history could not be loaded:", error);
+      setFullHistoryMessages([]);
+      setFullHistoryStatus("error");
+    }
+  }
+
+  async function handleMessagePosted() {
+    await loadLatestMessages();
+
+    if (activeModal === "messages") {
+      await loadFullMessageHistory();
+    }
+  }
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -309,6 +352,16 @@ function App() {
 
     return () => window.clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    loadLatestMessages();
+  }, []);
+
+  useEffect(() => {
+    if (activeModal === "messages") {
+      loadFullMessageHistory();
+    }
+  }, [activeModal]);
 
   useEffect(() => {
     function handleEscape(event) {
@@ -339,6 +392,7 @@ function App() {
   function showAnotherToast() {
     setToastIndex((currentIndex) => getRandomToastIndex(currentIndex));
   }
+
 
   return (
     <main className="app-shell">
@@ -454,17 +508,56 @@ function App() {
         <div className="section-heading">
           <p className="section-kicker">Latest club notices</p>
           <h2>Latest Message Board</h2>
-          <p>
-            Sample register entries are shown for v0.9. Live posting will be added in
-            the Supabase stage.
-          </p>
+          <p>The latest notes from the official family register.</p>
         </div>
 
-        <div className="message-preview-grid">
-          {latestMessages.map((message) => (
-            <MessageCard key={message.id} message={message} isPreview />
-          ))}
-        </div>
+        {latestMessagesStatus === "loading" && (
+          <div className="message-preview-grid">
+            <article className="message-card message-card-preview">
+              <div className="message-card-header">
+                <div>
+                  <h3>Opening the register</h3>
+                  <p className="message-status">Official club notices are being prepared</p>
+                </div>
+              </div>
+              <p className="message-copy">“One moment while the latest entries are gathered.”</p>
+            </article>
+          </div>
+        )}
+
+        {latestMessagesStatus === "error" && (
+          <div className="message-preview-grid">
+            <article className="message-card message-card-preview">
+              <div className="message-card-header">
+                <div>
+                  <h3>The message board could not be opened just now.</h3>
+                </div>
+              </div>
+              <p className="message-copy">Please try again in a moment.</p>
+            </article>
+          </div>
+        )}
+
+        {latestMessagesStatus === "success" && latestPreviewMessages.length === 0 && (
+          <div className="message-preview-grid">
+            <article className="message-card message-card-preview">
+              <div className="message-card-header">
+                <div>
+                  <h3>No official messages have been posted yet.</h3>
+                </div>
+              </div>
+              <p className="message-copy">The register is ready when the family is.</p>
+            </article>
+          </div>
+        )}
+
+        {latestMessagesStatus === "success" && latestPreviewMessages.length > 0 && (
+          <div className="message-preview-grid">
+            {latestPreviewMessages.map((message) => (
+              <MessageCard key={message.id} message={message} isPreview />
+            ))}
+          </div>
+        )}
 
         <div className="message-preview-actions">
           <button
@@ -635,25 +728,73 @@ function App() {
           <div className="message-board-intro">
             <p className="section-kicker">Official club register</p>
             <p>
-              The message register is being prepared. Sample entries are shown here
-              until live posting is connected.
+              The full family register, newest first, gathered from the official
+              message board.
             </p>
           </div>
 
-          <MessageRegisterForm />
+          <MessageRegisterForm onMessagePosted={handleMessagePosted} />
 
-          <div className="history-list">
-            {groupedMessages.map((group) => (
-              <section className="history-group" key={group.dateGroup}>
-                <h3>{group.dateGroup}</h3>
-                <div className="history-group-messages">
-                  {group.messages.map((message) => (
-                    <MessageCard key={message.id} message={message} />
-                  ))}
+          {(fullHistoryStatus === "idle" || fullHistoryStatus === "loading") && (
+            <div className="history-list">
+              <article className="message-card">
+                <div className="message-card-header">
+                  <div>
+                    <h3>Opening the full register</h3>
+                    <p className="message-status">
+                      Official club notices are being gathered
+                    </p>
+                  </div>
                 </div>
-              </section>
-            ))}
-          </div>
+                <p className="message-copy">
+                  “One moment while the full register is opened.”
+                </p>
+              </article>
+            </div>
+          )}
+
+          {fullHistoryStatus === "error" && (
+            <div className="history-list">
+              <article className="message-card">
+                <div className="message-card-header">
+                  <div>
+                    <h3>The message board could not be opened just now.</h3>
+                  </div>
+                </div>
+                <p className="message-copy">Please try again in a moment.</p>
+              </article>
+            </div>
+          )}
+
+          {fullHistoryStatus === "success" && fullHistoryMessages.length === 0 && (
+            <div className="history-list">
+              <article className="message-card">
+                <div className="message-card-header">
+                  <div>
+                    <h3>No official messages have been posted yet.</h3>
+                  </div>
+                </div>
+                <p className="message-copy">
+                  The register is ready when the family is.
+                </p>
+              </article>
+            </div>
+          )}
+
+          {fullHistoryStatus === "success" && fullHistoryMessages.length > 0 && (
+            <div className="history-list">
+              {groupedFullHistoryMessages.map((group) => (
+                <section className="history-group" key={group.sortKey}>
+                  <h3>{group.dateGroup}</h3>
+                  <div className="history-group-messages">
+                    {group.messages.map((message) => (
+                      <MessageCard key={message.id} message={message} />
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
+          )}
 
           <button
             type="button"
