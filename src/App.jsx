@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import MessageRegisterForm from "./components/MessageRegisterForm";
 import "./App.css";
 
 const NZ_TIME_ZONE = "Pacific/Auckland";
@@ -638,6 +639,8 @@ function App() {
               until live posting is connected.
             </p>
           </div>
+
+          <MessageRegisterForm />
 
           <div className="history-list">
             {groupedMessages.map((group) => (
