@@ -1,0 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@500;600;700;800&family=Libre+Baskerville:wght@400;700&display=swap');
+
+:root {
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  --color-parchment: #f3e6c8;
+  --color-ink-brown: #2f261d;
+  --color-burgundy: #6e1f2f;
+  --color-club-green: #314a36;
+  --color-aged-gold: #b8924a;
+  --color-closed-charcoal: #4a4038;
+  --color-cream-card: #fff8e8;
+
+  --font-title: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'Libre Baskerville', Georgia, serif;
+  --font-label: 'Inter', Arial, sans-serif;
+
+  --radius-large: 1.5rem;
+  --radius-medium: 1.15rem;
+  --radius-small: 0.7rem;
+
+  --border-double-gold: 4px double rgba(184, 146, 74, 0.75);
+
+  --shadow-document: 0 1.5rem 4rem rgba(47, 38, 29, 0.18);
+  --shadow-soft: 0 0.9rem 2rem rgba(47, 38, 29, 0.12);
+  --shadow-button: 0 0.45rem 0.9rem rgba(110, 31, 47, 0.22);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  min-height: 100%;
+  background: var(--color-parchment);
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  color: var(--color-ink-brown);
+  background:
+    radial-gradient(circle at top left, rgba(255, 248, 232, 0.75), transparent 34rem),
+    radial-gradient(circle at bottom right, rgba(184, 146, 74, 0.24), transparent 30rem),
+    linear-gradient(135deg, rgba(255, 248, 232, 0.2), rgba(47, 38, 29, 0.03)),
+    var(--color-parchment);
+  font-family: var(--font-body);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  border: 0;
+}
+
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+::selection {
+  color: var(--color-cream-card);
+  background: var(--color-burgundy);
+}
