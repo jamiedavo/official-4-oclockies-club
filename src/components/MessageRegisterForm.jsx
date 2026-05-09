@@ -3,12 +3,14 @@ import { supabase } from '../lib/supabaseClient'
 import { getNewZealandLocalDate } from '../utils/dateHelpers'
 
 const STATUS_OPTIONS = [
-  'Absent in body, present in spirit',
   'Raising a glass from afar',
+  'Absent in body, present in spirit',
   'Officially excused',
-  'Late but emotionally accounted for',
-  'Represented by grandchild',
-  'Snack debt acknowledged',
+  'On my way, allegedly',
+  'Present and accounted for',
+  'Running late, I cant find my vape',
+  'Present, settled, and suitably refreshed',
+  'On my way with snacks',
 ]
 
 function MessageRegisterForm({ onMessagePosted }) {

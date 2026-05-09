@@ -415,9 +415,7 @@ function App() {
             <p className="status-main">{sacredHourStatus.mainText}</p>
             <p className="countdown-display">{sacredHourStatus.countdown}</p>
             <ul className="status-lines">
-              <li>Glasses may now be inspected.</li>
-              <li>Seating claims may be submitted.</li>
-              <li>Snacks are encouraged but not compulsory.</li>
+              <li></li>
               <li>The sacred hour approaches.</li>
             </ul>
             <div className="status-actions">
@@ -433,7 +431,7 @@ function App() {
             <p className="status-main open-main">{sacredHourStatus.mainText}</p>
             <ul className="status-lines">
               <li>Thy glass should now be suitably full.</li>
-              <li>Conversation may begin, overlap, wander, and improve.</li>
+              <li>Conversation may begin, overlap, and wander.</li>
               <li>Mum’s authority is active and final.</li>
             </ul>
             <div className="status-actions">
@@ -706,9 +704,9 @@ function App() {
               or a family habit. It is one of the ways your love has shaped this family.
             </p>
             <p>
-              So on Mother’s Day, this official club stands in your honour. Under your
-              lifelong authority, with full appreciation from every member present,
-              absent, late, loud, quiet, snack-bearing, and emotionally accounted for.
+              So on Mother’s Day, this official club stands in your honour. Under your 
+              lifelong authority, with full appreciation from every member present, absent, 
+              late, loud, arriving with stories, talking all at once, and present in spirit. 
             </p>
             <p>Happy Mother’s Day.</p>
             <p>We love you more than words can properly say.</p>
