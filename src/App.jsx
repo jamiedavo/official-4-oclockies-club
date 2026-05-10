@@ -435,7 +435,6 @@ function App() {
             <p className="status-main open-main">{sacredHourStatus.mainText}</p>
             <ul className="status-lines">
               <li>Thy glass should now be suitably full.</li>
-              <li>Conversation may begin, overlap, and wander.</li>
             </ul>
             <div className="status-actions">
               <button
