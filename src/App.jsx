@@ -436,7 +436,6 @@ function App() {
             <ul className="status-lines">
               <li>Thy glass should now be suitably full.</li>
               <li>Conversation may begin, overlap, and wander.</li>
-              <li>Mum’s authority is active and final.</li>
             </ul>
             <div className="status-actions">
               <button
