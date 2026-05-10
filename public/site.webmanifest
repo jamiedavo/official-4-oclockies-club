@@ -1,0 +1,18 @@
+{
+  "name": "The Official 4 O’Clockies Club",
+  "short_name": "4 O’Clockies",
+  "description": "The official family club for the sacred daily pause.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F3E6C8",
+  "theme_color": "#6E1F2F",
+  "icons": [
+    {
+      "src": "/club-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

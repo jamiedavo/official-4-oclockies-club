@@ -1,0 +1,8 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The Official 4 O’Clockies Club icon">
+  <rect width="512" height="512" rx="96" fill="#F3E6C8"/>
+  <circle cx="256" cy="256" r="184" fill="#FFF8E8" stroke="#B8924A" stroke-width="18"/>
+  <circle cx="256" cy="256" r="150" fill="none" stroke="#6E1F2F" stroke-width="8"/>
+  <text x="256" y="240" text-anchor="middle" font-family="Georgia, serif" font-size="150" font-weight="700" fill="#6E1F2F">4</text>
+  <text x="256" y="322" text-anchor="middle" font-family="Georgia, serif" font-size="48" font-weight="700" fill="#2F261D">O’Clockies</text>
+  <path d="M150 374 H362" stroke="#B8924A" stroke-width="10" stroke-linecap="round"/>
+</svg>
